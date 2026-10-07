@@ -13,6 +13,9 @@ import {
   generateHomePage,
   generateLoginPage,
   generateRegisterPage,
+  generateForgotPasswordPage,
+  generateVerifyOtpPage,
+  generateRoleLayout,
   generateRoleDashboardPage,
   generateRoleSubPage,
   generateDashboardLayout,
@@ -23,8 +26,11 @@ import {
   generateReduxProvider,
   generateBaseApi,
   generateAuthSlice,
+  generateAuthApi,
   generateRolesConstants,
   generateAuthTypes,
+  generateCommonTypes,
+  generateNavTypes,
   generatePermissions,
   generateMiddleware,
   generateRoleAppConfig,
@@ -32,6 +38,21 @@ import {
   generateGlobalsCss,
   generateRoleGuardComponent,
   generateUseAuthHook,
+  generateUtils,
+  generateUiButton,
+  generateUiCard,
+  generateUiInput,
+  generateUiDataTable,
+  generateLoadingSpinner,
+  generateEmptyState,
+  generateHeaderComponent,
+  generateSidebarComponent,
+  generateNavConfig,
+  generateSiteConfig,
+  generateSocketClient,
+  generateSocketEvents,
+  generateUseSocketHook,
+  generateUseDebounceHook,
 } from "./templates";
 
 export class ProjectGenerator {
@@ -47,13 +68,16 @@ export class ProjectGenerator {
   async generate(): Promise<void> {
     console.log("");
     console.log(
-      chalk.bold.cyan("🚀 Creating Next Role App: ") +
+      chalk.bold.cyan("🚀 Creating Next Role-Based App: ") +
         chalk.white(this.config.projectName)
     );
     console.log("");
 
     await this.createNextApp();
     await this.createFolderStructure();
+    await this.generateSharedComponentsAndUi();
+    await this.generateConfigAndNavSetup();
+    await this.generateRealtimeSetup();
     await this.generateRoleStructure();
 
     if (this.config.redux) {
@@ -117,17 +141,28 @@ export class ProjectGenerator {
 
   // ─── Step 2: Create Base Folder Structure ───
   private async createFolderStructure(): Promise<void> {
-    const spinner = ora("Creating folder structure...").start();
+    const spinner = ora("Creating scalable feature-based folder structure...").start();
 
     const dirs = [
-      "components",
-      "features/auth",
+      "config",
+      "components/ui",
+      "components/shared",
+      "components/feedback",
+      "features/auth/components",
+      "features/auth/api",
+      "features/auth/slice",
+      "features/auth/types",
       "features/user",
       "lib/auth",
+      "lib/socket",
       "constants",
       "types",
+      "hooks",
+      "app/(marketing)",
       "app/(auth)/login",
       "app/(auth)/register",
+      "app/(auth)/forgot-password",
+      "app/(auth)/verify-otp",
       "app/(dashboard)",
       "app/unauthorized",
     ];
@@ -139,24 +174,131 @@ export class ProjectGenerator {
       }
     }
 
-    dirs.push("hooks");
-
     for (const dir of dirs) {
       await fs.ensureDir(path.join(this.projectPath, dir));
     }
 
-    spinner.succeed("Folder structure created");
+    spinner.succeed("Scalable folder skeleton created");
   }
 
-  // ─── Step 3: Generate Role Structure ───
+  // ─── Step 3: Shared UI & Components ───
+  private async generateSharedComponentsAndUi(): Promise<void> {
+    const spinner = ora("Creating atomic UI primitives & shared layouts...").start();
+
+    const ext = this.config.typescript ? "ts" : "js";
+    const extx = this.config.typescript ? "tsx" : "jsx";
+
+    // lib/utils.ts
+    await fs.writeFile(
+      path.join(this.projectPath, "lib", `utils.${ext}`),
+      generateUtils()
+    );
+
+    // UI primitives
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "ui", `Button.${extx}`),
+      generateUiButton()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "ui", `Card.${extx}`),
+      generateUiCard()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "ui", `Input.${extx}`),
+      generateUiInput()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "ui", `DataTable.${extx}`),
+      generateUiDataTable()
+    );
+
+    // Feedback components
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "feedback", `LoadingSpinner.${extx}`),
+      generateLoadingSpinner()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "feedback", `EmptyState.${extx}`),
+      generateEmptyState()
+    );
+
+    // Shared Header & Sidebar
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "shared", `Header.${extx}`),
+      generateHeaderComponent(this.config)
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "components", "shared", `Sidebar.${extx}`),
+      generateSidebarComponent(this.config)
+    );
+
+    spinner.succeed("Atomic UI primitives & shared layouts created");
+  }
+
+  // ─── Step 4: Config & Navigation ───
+  private async generateConfigAndNavSetup(): Promise<void> {
+    const spinner = ora("Generating central configuration & role navigation...").start();
+
+    const ext = this.config.typescript ? "ts" : "js";
+
+    await fs.writeFile(
+      path.join(this.projectPath, "config", `site.${ext}`),
+      generateSiteConfig(this.config)
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "config", `navigation.${ext}`),
+      generateNavConfig(this.config)
+    );
+
+    if (this.config.typescript) {
+      await fs.writeFile(
+        path.join(this.projectPath, "types", `common.types.${ext}`),
+        generateCommonTypes()
+      );
+      await fs.writeFile(
+        path.join(this.projectPath, "types", `nav.types.${ext}`),
+        generateNavTypes()
+      );
+    }
+
+    spinner.succeed("Central configuration & navigation configured");
+  }
+
+  // ─── Step 5: Real-time Socket Setup ───
+  private async generateRealtimeSetup(): Promise<void> {
+    const spinner = ora("Wiring real-time socket layer & ergonomic hooks...").start();
+
+    const ext = this.config.typescript ? "ts" : "js";
+
+    await fs.writeFile(
+      path.join(this.projectPath, "lib", "socket", `socketClient.${ext}`),
+      generateSocketClient()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "lib", "socket", `socketEvents.${ext}`),
+      generateSocketEvents()
+    );
+
+    await fs.writeFile(
+      path.join(this.projectPath, "hooks", `useSocket.${ext}`),
+      generateUseSocketHook()
+    );
+    await fs.writeFile(
+      path.join(this.projectPath, "hooks", `useDebounce.${ext}`),
+      generateUseDebounceHook()
+    );
+
+    spinner.succeed("Real-time socket layer & hooks ready");
+  }
+
+  // ─── Step 6: Generate Role Structure ───
   private async generateRoleStructure(): Promise<void> {
-    const spinner = ora("Generating role-based routes...").start();
+    const spinner = ora("Generating role-based nested layouts & sub-routes...").start();
 
     const allRoles = [...this.config.roles, ...this.config.customRoles];
     const ext = this.config.typescript ? "tsx" : "jsx";
 
     for (const role of allRoles) {
-      // Get routes for this role
       const routes = this.getRoutesForRole(role);
 
       // Create role directory under (dashboard)
@@ -168,6 +310,12 @@ export class ProjectGenerator {
       );
       await fs.ensureDir(roleDashboardPath);
 
+      // Nested Role Layout with persistent Sidebar & Header
+      await fs.writeFile(
+        path.join(roleDashboardPath, `layout.${ext}`),
+        generateRoleLayout(role, this.config)
+      );
+
       // Create dashboard page for this role
       const dashboardDir = path.join(roleDashboardPath, "dashboard");
       await fs.ensureDir(dashboardDir);
@@ -178,7 +326,7 @@ export class ProjectGenerator {
 
       // Create sub-pages for each route
       for (const route of routes) {
-        if (route === "dashboard") continue; // Already created
+        if (route === "dashboard") continue;
 
         const routeDir = path.join(roleDashboardPath, route);
         await fs.ensureDir(routeDir);
@@ -213,6 +361,18 @@ export class ProjectGenerator {
       generateRegisterPage(this.config)
     );
 
+    // Forgot password page
+    await fs.writeFile(
+      path.join(this.projectPath, "app", "(auth)", "forgot-password", `page.${ext}`),
+      generateForgotPasswordPage(this.config)
+    );
+
+    // Verify OTP page
+    await fs.writeFile(
+      path.join(this.projectPath, "app", "(auth)", "verify-otp", `page.${ext}`),
+      generateVerifyOtpPage(this.config)
+    );
+
     // Unauthorized page
     await fs.writeFile(
       path.join(this.projectPath, "app", "unauthorized", `page.${ext}`),
@@ -242,9 +402,9 @@ export class ProjectGenerator {
     );
   }
 
-  // ─── Step 4: Generate Redux Setup ───
+  // ─── Step 7: Generate Redux Setup ───
   private async generateReduxSetup(): Promise<void> {
-    const spinner = ora("Setting up Redux Toolkit...").start();
+    const spinner = ora("Setting up Redux Toolkit & Feature API slicing...").start();
 
     const ext = this.config.typescript ? "ts" : "js";
     const extx = this.config.typescript ? "tsx" : "jsx";
@@ -273,22 +433,28 @@ export class ProjectGenerator {
         path.join(this.projectPath, "lib", "redux", "api", `baseApi.${ext}`),
         generateBaseApi()
       );
+
+      // Feature Auth API injection
+      await fs.writeFile(
+        path.join(this.projectPath, "features", "auth", "api", `authApi.${ext}`),
+        generateAuthApi(this.config)
+      );
     }
 
     // Auth Slice
     await fs.writeFile(
-      path.join(this.projectPath, "features", "auth", `authSlice.${ext}`),
+      path.join(this.projectPath, "features", "auth", "slice", `authSlice.${ext}`),
       generateAuthSlice(this.config)
     );
 
     spinner.succeed(
-      `Redux Toolkit${this.config.rtkQuery ? " + RTK Query" : ""} configured`
+      `Redux Toolkit${this.config.rtkQuery ? " + RTK Query feature injection" : ""} configured`
     );
   }
 
-  // ─── Step 5: Generate Auth Setup ───
+  // ─── Step 8: Generate Auth Setup ───
   private async generateAuthSetup(): Promise<void> {
-    const spinner = ora("Creating RBAC utilities...").start();
+    const spinner = ora("Creating RBAC utilities & RoleGuard...").start();
 
     const ext = this.config.typescript ? "ts" : "js";
     const extx = this.config.typescript ? "tsx" : "jsx";
@@ -301,9 +467,14 @@ export class ProjectGenerator {
 
     // Auth types
     if (this.config.typescript) {
+      const authTypesContent = generateAuthTypes(this.config);
       await fs.writeFile(
         path.join(this.projectPath, "types", `auth.${ext}`),
-        generateAuthTypes(this.config)
+        authTypesContent
+      );
+      await fs.writeFile(
+        path.join(this.projectPath, "features", "auth", "types", `auth.types.${ext}`),
+        `export * from "@/types/auth";\n`
       );
     }
 
@@ -315,9 +486,15 @@ export class ProjectGenerator {
 
     // RoleGuard component
     if (this.config.redux) {
+      const roleGuardCode = generateRoleGuardComponent();
+      await fs.writeFile(
+        path.join(this.projectPath, "components", "shared", `RoleGuard.${extx}`),
+        roleGuardCode
+      );
+      // Backwards-compatible import support: '@/components/RoleGuard'
       await fs.writeFile(
         path.join(this.projectPath, "components", `RoleGuard.${extx}`),
-        generateRoleGuardComponent()
+        `export * from "./shared/RoleGuard";\n`
       );
 
       // useAuth hook
@@ -327,12 +504,12 @@ export class ProjectGenerator {
       );
     }
 
-    spinner.succeed("RBAC utilities created");
+    spinner.succeed("RBAC utilities & security guards created");
   }
 
-  // ─── Step 6: Generate Middleware ───
+  // ─── Step 9: Generate Middleware ───
   private async generateMiddlewareFile(): Promise<void> {
-    const spinner = ora("Creating middleware...").start();
+    const spinner = ora("Creating edge middleware...").start();
 
     const ext = this.config.typescript ? "ts" : "js";
 
@@ -341,12 +518,12 @@ export class ProjectGenerator {
       generateMiddleware(this.config)
     );
 
-    spinner.succeed("Middleware created");
+    spinner.succeed("Edge middleware created");
   }
 
-  // ─── Step 7: Generate Config Files ───
+  // ─── Step 10: Generate Config Files ───
   private async generateConfigFiles(): Promise<void> {
-    const spinner = ora("Creating configuration files...").start();
+    const spinner = ora("Creating project configuration files...").start();
 
     const ext = this.config.typescript ? "ts" : "js";
 
@@ -371,7 +548,7 @@ export class ProjectGenerator {
     spinner.succeed("Configuration files created");
   }
 
-  // ─── Step 8: Install Additional Dependencies ───
+  // ─── Step 11: Install Additional Dependencies ───
   private async installAdditionalDeps(): Promise<void> {
     const spinner = ora("Installing additional dependencies...").start();
 
@@ -400,7 +577,6 @@ export class ProjectGenerator {
     if (PREDEFINED_ROLES[role]) {
       return PREDEFINED_ROLES[role].routes;
     }
-    // Custom role gets default routes
     return DEFAULT_CUSTOM_ROLE_ROUTES;
   }
 
@@ -409,20 +585,24 @@ export class ProjectGenerator {
     const allRoles = [...this.config.roles, ...this.config.customRoles];
 
     console.log("");
-    console.log(chalk.green.bold("🎉 Project created successfully!"));
+    console.log(chalk.green.bold("🎉 Enterprise Next.js Role-Based App created successfully!"));
     console.log("");
-    console.log(chalk.white("  Project: ") + chalk.cyan(this.config.projectName));
+    console.log(chalk.white("  Project:      ") + chalk.cyan(this.config.projectName));
     console.log(
-      chalk.white("  Roles:   ") + chalk.yellow(allRoles.join(", "))
+      chalk.white("  Roles:        ") + chalk.yellow(allRoles.join(", "))
     );
     console.log(
-      chalk.white("  Stack:   ") +
+      chalk.white("  Architecture: ") + chalk.magenta("Feature-Driven Modular Hybrid Structure")
+    );
+    console.log(
+      chalk.white("  Stack:        ") +
         [
-          "Next.js",
+          "Next.js 16",
           this.config.typescript ? "TypeScript" : "JavaScript",
           this.config.tailwind ? "Tailwind CSS" : null,
           this.config.redux ? "Redux Toolkit" : null,
           this.config.rtkQuery ? "RTK Query" : null,
+          "Socket.io Ready",
         ]
           .filter(Boolean)
           .join(", ")
@@ -433,7 +613,7 @@ export class ProjectGenerator {
     console.log(chalk.cyan(`    cd ${this.config.projectName}`));
     console.log(chalk.cyan("    npm run dev"));
     console.log("");
-    console.log(chalk.white("  Dashboard routes:"));
+    console.log(chalk.white("  Role Dashboards (Isolated Nested Layouts):"));
     console.log("");
 
     for (const role of allRoles) {
@@ -443,7 +623,7 @@ export class ProjectGenerator {
     console.log("");
     console.log(
       chalk.gray(
-        "  Edit role-app.config.ts to customize your role configuration."
+        "  Customize navigation in config/navigation.ts and roles in constants/roles.ts"
       )
     );
     console.log("");

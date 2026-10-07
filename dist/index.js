@@ -34,31 +34,38 @@ var import_prompts = require("@inquirer/prompts");
 var PREDEFINED_ROLES = {
   admin: {
     routes: ["dashboard", "users", "settings", "analytics"],
-    description: "Full system access with user management"
+    description: "Full system access with user management",
+    icon: "ShieldAlert"
   },
   customer: {
     routes: ["dashboard", "orders", "profile", "support"],
-    description: "Customer portal with order tracking"
+    description: "Customer portal with order tracking",
+    icon: "ShoppingBag"
   },
   worker: {
     routes: ["dashboard", "tasks", "schedule", "reports"],
-    description: "Worker portal with task management"
+    description: "Worker portal with task management",
+    icon: "Briefcase"
   },
   manager: {
     routes: ["dashboard", "team", "reports", "approvals"],
-    description: "Management portal with team oversight"
+    description: "Management portal with team oversight",
+    icon: "Users2"
   },
   vendor: {
     routes: ["dashboard", "products", "orders", "inventory"],
-    description: "Vendor portal with product management"
+    description: "Vendor portal with product management",
+    icon: "Store"
   },
   editor: {
     routes: ["dashboard", "content", "media", "drafts"],
-    description: "Content editor with publishing tools"
+    description: "Content editor with publishing tools",
+    icon: "FileEdit"
   },
   moderator: {
     routes: ["dashboard", "reviews", "reports", "flags"],
-    description: "Moderation panel with review tools"
+    description: "Moderation panel with review tools",
+    icon: "ShieldCheck"
   }
 };
 var DEFAULT_CUSTOM_ROLE_ROUTES = ["dashboard"];
@@ -144,7 +151,6 @@ function pascalCase(str) {
   return str.split(/[-_]/).map((s) => capitalize(s)).join("");
 }
 function generateRootLayout(config) {
-  const ext = config.typescript ? "tsx" : "jsx";
   const reduxImport = config.redux ? `import { ReduxProvider } from "@/lib/redux/provider";
 ` : "";
   const bodyContent = config.redux ? `        <ReduxProvider>
@@ -155,7 +161,7 @@ ${config.tailwind ? `import "./globals.css";
 ` : ""}
 export const metadata: Metadata = {
   title: "${config.projectName}",
-  description: "Role-based Next.js application powered by create-next-role-app",
+  description: "Enterprise Role-based Next.js application powered by create-next-role-based-app",
 };
 
 export default function RootLayout({
@@ -164,8 +170,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-gray-950 text-gray-100 antialiased selection:bg-blue-600 selection:text-white">
 ${bodyContent}
       </body>
     </html>
@@ -176,44 +182,57 @@ ${bodyContent}
 function generateHomePage(config) {
   const allRoles = [...config.roles, ...config.customRoles];
   return `import Link from "next/link";
+import { siteConfig } from "@/config/site";
 
 export default function HomePage() {
+  const roles = siteConfig.roles;
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <div className="text-center space-y-8 p-8">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/40 via-gray-950 to-gray-950 text-white px-4">
+      <div className="text-center space-y-6 max-w-3xl mx-auto p-8 rounded-3xl border border-gray-800/80 bg-gray-900/40 backdrop-blur-2xl shadow-2xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          \u{1F680} Next.js 16 Enterprise RBAC Architecture
+        </div>
+        
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
           ${config.projectName}
         </h1>
-        <p className="text-gray-400 text-lg max-w-md mx-auto">
-          Role-based Next.js application with ${allRoles.length} roles configured.
-          Built with create-next-role-app.
+        
+        <p className="text-gray-400 text-lg max-w-xl mx-auto leading-relaxed">
+          Production-grade Next.js application scaffolded with role-isolated dashboards, Redux Toolkit state, and RBAC security.
         </p>
 
-        <div className="flex flex-col gap-4 mt-8">
+        <div className="flex flex-wrap justify-center gap-4 pt-4">
           <Link
             href="/login"
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors duration-200"
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-lg shadow-blue-600/25 transition-all duration-200"
           >
-            Sign In
+            Sign In Portal
           </Link>
           <Link
             href="/register"
-            className="px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors duration-200"
+            className="px-6 py-2.5 bg-gray-800/80 hover:bg-gray-800 text-gray-300 rounded-xl font-medium border border-gray-700/80 transition-all duration-200"
           >
             Create Account
           </Link>
         </div>
 
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {${JSON.stringify(allRoles)}.map((role) => (
-            <Link
-              key={role}
-              href={\`/\${role}/dashboard\`}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm capitalize transition-colors duration-200 border border-gray-700"
-            >
-              {role} Dashboard
-            </Link>
-          ))}
+        <div className="pt-8 border-t border-gray-800/80">
+          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">
+            Available Role Dashboards ({roles?.length || 0})
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+            {roles.map((role) => (
+              <Link
+                key={role}
+                href={\`/\${role}/dashboard\`}
+                className="group flex items-center justify-between px-3.5 py-2.5 bg-gray-950/60 hover:bg-blue-600/10 hover:border-blue-500/40 border border-gray-800/80 rounded-xl text-xs font-medium text-gray-300 hover:text-white transition-all duration-200"
+              >
+                <span className="capitalize">{role}</span>
+                <span className="text-gray-600 group-hover:text-blue-400 transition-colors">\u2192</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </main>
@@ -222,354 +241,340 @@ export default function HomePage() {
 `;
 }
 function generateLoginPage(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  const defaultRole = allRoles[0] || "admin";
   return `"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+${config.redux ? `import { useAppDispatch } from "@/lib/redux/hooks";
+import { setCredentials } from "@/features/auth/slice/authSlice";` : ""}
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 export default function LoginPage() {
   const router = useRouter();
+${config.redux ? "  const dispatch = useAppDispatch();" : ""}
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("${defaultRole}");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // TODO: Implement your authentication logic here
-    // Example: call your auth API, verify credentials, get user roles
-    // Then redirect based on role:
-    // router.push("/admin/dashboard");
-
-    console.log("Login attempt:", { email, password });
-    setIsLoading(false);
+    try {
+${config.redux ? `      dispatch(
+        setCredentials({
+          user: {
+            id: "user-" + Date.now(),
+            name: email.split("@")[0] || "Test User",
+            email,
+            roles: [role as any],
+          },
+          token: "mock-jwt-token-" + Date.now(),
+        })
+      );` : ""}
+      router.push(\`/\${role}/dashboard\`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="w-full max-w-md p-8 bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700 shadow-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
-          <p className="text-gray-400 mt-2">Sign in to your account</p>
+    <Card className="w-full max-w-md border-gray-800 bg-gray-900/60 backdrop-blur-2xl">
+      <CardHeader className="text-center space-y-2">
+        <div className="mx-auto w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-lg">
+          \u{1F510}
         </div>
+        <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
+        <p className="text-xs text-gray-400">Sign in to access your role-based dashboard</p>
+      </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="you@example.com"
-              required
-            />
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-gray-400">Demo Role Selection</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3.5 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+            >
+              ${allRoles.map((r) => `<option value="${r}">${capitalize(r)}</option>`).join("\n              ")}
+            </select>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-              required
-            />
+          <div className="flex items-center justify-between text-xs pt-1">
+            <Link href="/forgot-password" className="text-blue-400 hover:underline">
+              Forgot password?
+            </Link>
+            <Link href="/verify-otp" className="text-gray-400 hover:text-white">
+              OTP Login
+            </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </button>
+          <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
+            Sign In to Dashboard
+          </Button>
         </form>
 
-        <p className="text-center text-gray-400 mt-6">
+        <div className="mt-6 text-center text-xs text-gray-400">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Sign up
+          <Link href="/register" className="text-blue-400 hover:underline font-medium">
+            Create account
           </Link>
-        </p>
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 `;
 }
 function generateRegisterPage(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  const defaultRole = allRoles[0] || "admin";
   return `"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+${config.redux ? `import { useAppDispatch } from "@/lib/redux/hooks";
+import { setCredentials } from "@/features/auth/slice/authSlice";` : ""}
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+${config.redux ? "  const dispatch = useAppDispatch();" : ""}
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("${defaultRole}");
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // TODO: Implement your registration logic here
-    console.log("Register attempt:", formData);
-    setIsLoading(false);
+    try {
+${config.redux ? `      dispatch(
+        setCredentials({
+          user: {
+            id: "user-" + Date.now(),
+            name,
+            email,
+            roles: [role as any],
+          },
+          token: "mock-jwt-token-" + Date.now(),
+        })
+      );` : ""}
+      router.push(\`/\${role}/dashboard\`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="w-full max-w-md p-8 bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700 shadow-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Create Account</h1>
-          <p className="text-gray-400 mt-2">Get started with your account</p>
+    <Card className="w-full max-w-md border-gray-800 bg-gray-900/60 backdrop-blur-2xl">
+      <CardHeader className="text-center space-y-2">
+        <div className="mx-auto w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-lg">
+          \u{1F4DD}
         </div>
+        <CardTitle className="text-2xl font-bold text-white">Create an Account</CardTitle>
+        <p className="text-xs text-gray-400">Join and select your account role</p>
+      </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="John Doe"
-              required
-            />
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Full Name"
+            type="text"
+            placeholder="John Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-gray-400">Assign Account Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3.5 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+            >
+              ${allRoles.map((r) => `<option value="${r}">${capitalize(r)}</option>`).join("\n              ")}
+            </select>
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
-          >
-            {isLoading ? "Creating account..." : "Create Account"}
-          </button>
+          <Button type="submit" className="w-full mt-2" isLoading={isLoading}>
+            Register & Continue
+          </Button>
         </form>
 
-        <p className="text-center text-gray-400 mt-6">
+        <div className="mt-6 text-center text-xs text-gray-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-400 hover:text-blue-300 transition-colors">
+          <Link href="/login" className="text-blue-400 hover:underline font-medium">
             Sign in
           </Link>
-        </p>
-      </div>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 `;
 }
-function generateRoleDashboardPage(roleName, routes) {
-  const displayName = pascalCase(roleName);
-  return `import Link from "next/link";
+function generateForgotPasswordPage(config) {
+  return `"use client";
 
-export default function ${displayName}Dashboard() {
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <h1 className="text-xl font-bold">
-            <span className="text-blue-400">${displayName}</span> Dashboard
-          </h1>
-          <nav className="flex items-center gap-4">
-            <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Home
+    <Card className="w-full max-w-md border-gray-800 bg-gray-900/60 backdrop-blur-2xl">
+      <CardHeader className="text-center space-y-2">
+        <CardTitle className="text-2xl font-bold text-white">Reset Password</CardTitle>
+        <p className="text-xs text-gray-400">Enter your email to receive recovery instructions</p>
+      </CardHeader>
+      <CardContent>
+        {submitted ? (
+          <div className="text-center space-y-4">
+            <p className="text-sm text-green-400">Password reset link sent if account exists.</p>
+            <Link href="/login" className="text-xs text-blue-400 hover:underline">
+              Back to Login
             </Link>
-            <button className="px-4 py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg text-sm transition-colors">
-              Sign Out
-            </button>
-          </nav>
-        </div>
-      </header>
-
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 min-h-[calc(100vh-65px)] bg-gray-800/30 border-r border-gray-700 p-4">
-          <nav className="space-y-1">
-            ${routes.map(
-    (route) => `<Link
-              href="/${roleName}/${route}"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700/50 hover:text-white transition-colors"
-            >
-              <span className="capitalize">${route}</span>
-            </Link>`
-  ).join("\n            ")}
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-2">
-              Welcome to ${displayName} Dashboard
-            </h2>
-            <p className="text-gray-400 mb-8">
-              Manage your ${roleName} activities and resources from here.
-            </p>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {[
-                { label: "Total Users", value: "1,234", change: "+12%" },
-                { label: "Active Sessions", value: "56", change: "+5%" },
-                { label: "Tasks Pending", value: "23", change: "-3%" },
-                { label: "Completion Rate", value: "89%", change: "+7%" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6"
-                >
-                  <p className="text-gray-400 text-sm">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  <p className="text-green-400 text-sm mt-1">{stat.change}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick Links */}
-            <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 md:grid-cols-${Math.min(routes.length, 4)} gap-3">
-                ${routes.map(
-    (route) => `<Link
-                  href="/${roleName}/${route}"
-                  className="px-4 py-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg text-center capitalize transition-colors"
-                >
-                  ${route}
-                </Link>`
-  ).join("\n                ")}
-              </div>
-            </div>
           </div>
-        </main>
-      </div>
-    </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitted(true);
+            }}
+            className="space-y-4"
+          >
+            <Input
+              label="Email Address"
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Button type="submit" className="w-full">
+              Send Reset Link
+            </Button>
+            <div className="text-center pt-2">
+              <Link href="/login" className="text-xs text-gray-400 hover:text-white">
+                Cancel
+              </Link>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 `;
 }
-function generateRoleSubPage(roleName, routeName) {
-  const displayRole = pascalCase(roleName);
-  const displayRoute = pascalCase(routeName);
-  return `import Link from "next/link";
+function generateVerifyOtpPage(config) {
+  return `"use client";
 
-export default function ${displayRole}${displayRoute}Page() {
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+
+export default function VerifyOtpPage() {
+  const router = useRouter();
+  const [otp, setOtp] = useState("");
+
+  const handleVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push("/${config.roles[0] || "admin"}/dashboard");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800/50 backdrop-blur-xl border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
-            <Link href="/${roleName}/dashboard" className="text-gray-400 hover:text-white transition-colors">
-              \u2190 Back
+    <Card className="w-full max-w-md border-gray-800 bg-gray-900/60 backdrop-blur-2xl">
+      <CardHeader className="text-center space-y-2">
+        <CardTitle className="text-2xl font-bold text-white">Two-Factor / OTP Verification</CardTitle>
+        <p className="text-xs text-gray-400">Enter the 6-digit verification code</p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleVerify} className="space-y-4">
+          <Input
+            label="Verification Code"
+            type="text"
+            maxLength={6}
+            placeholder="123456"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            className="text-center tracking-widest text-lg font-mono font-bold"
+            required
+          />
+          <Button type="submit" className="w-full">
+            Verify & Authenticate
+          </Button>
+          <div className="text-center pt-2">
+            <Link href="/login" className="text-xs text-gray-400 hover:text-white">
+              Back to Login
             </Link>
-            <h1 className="text-xl font-bold">
-              <span className="text-blue-400">${displayRole}</span> / ${displayRoute}
-            </h1>
           </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto p-8">
-        <h2 className="text-3xl font-bold mb-2">${displayRoute}</h2>
-        <p className="text-gray-400 mb-8">
-          Manage ${routeName} for the ${roleName} role.
-        </p>
-
-        <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700 rounded-xl p-8 text-center">
-          <p className="text-gray-500 text-lg">
-            \u{1F6A7} This page is ready for your implementation.
-          </p>
-          <p className="text-gray-600 mt-2">
-            Start building the ${routeName} feature for ${roleName} role here.
-          </p>
-        </div>
-      </main>
-    </div>
+        </form>
+      </CardContent>
+    </Card>
   );
-}
-`;
-}
-function generateDashboardLayout() {
-  return `export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
 }
 `;
 }
@@ -579,35 +584,210 @@ function generateAuthLayout() {
 }: {
   children: React.ReactNode;
 }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/30 via-gray-950 to-gray-950">
+      {children}
+    </div>
+  );
+}
+`;
+}
+function generateDashboardLayout() {
+  return `export default function DashboardLayoutWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
+}
+`;
+}
+function generateRoleLayout(roleName, config) {
+  const displayName = pascalCase(roleName);
+  return `import { Sidebar } from "@/components/shared/Sidebar";
+import { Header } from "@/components/shared/Header";
+import { RoleGuard } from "@/components/shared/RoleGuard";
+import { ROLES } from "@/constants/roles";
+
+export default function ${displayName}Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <RoleGuard allowedRoles={[ROLES.${roleName.toUpperCase().replace(/[^A-Z0-9]/g, "_")}]}>
+      <div className="min-h-screen flex bg-gray-950 text-white">
+        <Sidebar role="${roleName}" />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header role="${roleName}" />
+          <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      </div>
+    </RoleGuard>
+  );
+}
+`;
+}
+function generateRoleDashboardPage(roleName, routes) {
+  const displayName = pascalCase(roleName);
+  return `import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { DataTable } from "@/components/ui/DataTable";
+
+export default function ${displayName}DashboardPage() {
+  const stats = [
+    { label: "Active Operations", value: "1,284", change: "+14.2%" },
+    { label: "Real-time Sessions", value: "342", change: "+8.1%" },
+    { label: "Pending Approvals", value: "19", change: "-4.5%" },
+    { label: "System Health", value: "99.9%", change: "Optimal" },
+  ];
+
+  const recentActivity = [
+    { id: "ACT-101", title: "Resource allocation updated", status: "Completed", time: "5 mins ago" },
+    { id: "ACT-102", title: "Security token re-authenticated", status: "Verified", time: "18 mins ago" },
+    { id: "ACT-103", title: "New telemetry event received", status: "Logged", time: "32 mins ago" },
+    { id: "ACT-104", title: "Policy threshold verified", status: "Passed", time: "1 hour ago" },
+  ];
+
+  return (
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Title */}
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white">
+          ${displayName} Console
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Role-isolated portal and metrics overview.
+        </p>
+      </div>
+
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <Card key={s.label} className="p-5">
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{s.label}</p>
+            <p className="text-2xl font-bold text-white mt-1.5">{s.value}</p>
+            <p className="text-xs text-emerald-400 font-medium mt-1">{s.change}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Quick Navigation Cards */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sub-module Navigation</CardTitle>
+          <p className="text-xs text-gray-400">Direct shortcuts to ${roleName} module paths</p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            ${routes.map(
+    (route) => `<Link
+              href="/${roleName}/${route}"
+              className="flex items-center justify-between p-3.5 bg-gray-800/40 hover:bg-gray-800 border border-gray-800 rounded-xl text-xs font-semibold text-gray-200 hover:text-white transition-all"
+            >
+              <span className="capitalize">${route}</span>
+              <span>\u2192</span>
+            </Link>`
+  ).join("\n            ")}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Real-time Audit Log</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={[
+              { header: "Activity ID", accessorKey: "id", className: "w-32 font-mono text-xs text-gray-400" },
+              { header: "Description", accessorKey: "title", className: "font-medium text-white" },
+              { header: "Status", cell: (item) => (
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  {item.status}
+                </span>
+              )},
+              { header: "Timestamp", accessorKey: "time", className: "text-right text-xs text-gray-400" },
+            ]}
+            data={recentActivity}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+`;
+}
+function generateRoleSubPage(roleName, routeName) {
+  const displayRole = pascalCase(roleName);
+  const displayRoute = pascalCase(routeName);
+  return `import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+
+export default function ${displayRole}${displayRoute}Page() {
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white capitalize">
+            ${displayRoute} Management
+          </h1>
+          <p className="text-gray-400 text-xs mt-1">
+            Dedicated ${roleName} sub-module for handling ${routeName}.
+          </p>
+        </div>
+        <Button size="sm">Add New ${displayRoute.slice(0, -1) || displayRoute}</Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="capitalize">${displayRoute} Records</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-8 border border-dashed border-gray-800 rounded-xl text-center space-y-3">
+            <div className="w-10 h-10 mx-auto rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
+              \u26A1
+            </div>
+            <p className="text-sm font-medium text-gray-300">
+              Module Ready for Data Integration
+            </p>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              Inject your RTK Query endpoints from <code>features/</code> or connect to your database API here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 `;
 }
 function generateUnauthorizedPage() {
   return `import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      <div className="text-center space-y-6 p-8">
-        <div className="text-6xl">\u{1F6AB}</div>
-        <h1 className="text-4xl font-bold text-red-400">Unauthorized</h1>
-        <p className="text-gray-400 max-w-md">
-          You don&apos;t have permission to access this page.
-          Please contact your administrator if you believe this is an error.
-        </p>
-        <div className="flex gap-4 justify-center mt-8">
-          <Link
-            href="/"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-          >
-            Go Home
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950 text-white">
+      <div className="text-center max-w-md space-y-6 p-8 rounded-3xl border border-red-500/20 bg-gray-900/50 backdrop-blur-xl">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center text-2xl font-bold">
+          \u26D4
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight">Access Denied (403)</h1>
+          <p className="text-gray-400 text-sm mt-2">
+            You do not possess the required role permissions to view this resource.
+          </p>
+        </div>
+        <div className="flex justify-center gap-3">
+          <Link href="/">
+            <Button variant="secondary" size="sm">Home</Button>
           </Link>
-          <Link
-            href="/login"
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-colors"
-          >
-            Sign In
+          <Link href="/login">
+            <Button size="sm">Switch Account</Button>
           </Link>
         </div>
       </div>
@@ -617,31 +797,22 @@ export default function UnauthorizedPage() {
 `;
 }
 function generateReduxStore(config) {
-  if (!config.rtkQuery) {
-    return `import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "@/features/auth/authSlice";
-
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-  },
-});
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-`;
-  }
-  return `import { configureStore } from "@reduxjs/toolkit";
-import { baseApi } from "./api/baseApi";
-import authReducer from "@/features/auth/authSlice";
-
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    [baseApi.reducerPath]: baseApi.reducer,
-  },
+  const rtkQueryImports = config.rtkQuery ? `import { baseApi } from "./api/baseApi";
+` : "";
+  const reducerEntries = [
+    `    auth: authReducer,`,
+    config.rtkQuery ? `    [baseApi.reducerPath]: baseApi.reducer,` : ""
+  ].filter(Boolean).join("\n");
+  const middlewareConfig = config.rtkQuery ? `
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(baseApi.middleware),
+    getDefaultMiddleware().concat(baseApi.middleware),` : "";
+  return `import { configureStore } from "@reduxjs/toolkit";
+${rtkQueryImports}import authReducer from "@/features/auth/slice/authSlice";
+
+export const store = configureStore({
+  reducer: {
+${reducerEntries}
+  },${middlewareConfig}
 });
 
 export type RootState = ReturnType<typeof store.getState>;
@@ -650,10 +821,11 @@ export type AppDispatch = typeof store.dispatch;
 }
 function generateReduxHooks() {
   return `import { useDispatch, useSelector } from "react-redux";
+import type { TypedUseSelectorHook } from "react-redux";
 import type { RootState, AppDispatch } from "./store";
 
-export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
-export const useAppSelector = useSelector.withTypes<RootState>();
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 `;
 }
 function generateReduxProvider() {
@@ -662,11 +834,7 @@ function generateReduxProvider() {
 import { Provider } from "react-redux";
 import { store } from "./store";
 
-export function ReduxProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ReduxProvider({ children }: { children: React.ReactNode }) {
   return <Provider store={store}>{children}</Provider>;
 }
 `;
@@ -678,73 +846,108 @@ export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || "/api",
-    prepareHeaders: (headers) => {
-      // TODO: Add your auth token here
-      // const token = getToken();
-      // if (token) {
-      //   headers.set("authorization", \`Bearer \${token}\`);
-      // }
+    prepareHeaders: (headers, { getState }) => {
+      // In production: extract token from Redux state or cookie
+      const token = (getState() as any)?.auth?.token;
+      if (token) {
+        headers.set("authorization", \`Bearer \${token}\`);
+      }
       return headers;
     },
   }),
-  tagTypes: ["User", "Auth"],
+  tagTypes: ["User", "Auth", "Role"],
   endpoints: () => ({}),
 });
 `;
 }
 function generateAuthSlice(config) {
-  const allRoles = [...config.roles, ...config.customRoles];
   return `import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { User } from "@/types/auth";
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
+  token: null,
   isAuthenticated: false,
-  isLoading: true,
 };
 
-const authSlice = createSlice({
+export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
+    setCredentials: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>
+    ) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
       state.isAuthenticated = true;
-      state.isLoading = false;
     },
-    clearUser: (state) => {
+    logout: (state) => {
       state.user = null;
+      state.token = null;
       state.isAuthenticated = false;
-      state.isLoading = false;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
+    updateUser: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+      }
     },
   },
 });
 
-export const { setUser, clearUser, setLoading } = authSlice.actions;
+export const { setCredentials, logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;
+`;
+}
+function generateAuthApi(config) {
+  return `import { baseApi } from "@/lib/redux/api/baseApi";
+import type { AuthResponse, LoginCredentials, User } from "@/types/auth";
+
+export const authApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    login: builder.mutation<AuthResponse, LoginCredentials>({
+      query: (credentials) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+    register: builder.mutation<AuthResponse, Partial<User> & { password: string }>({
+      query: (data) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+    getMe: builder.query<User, void>({
+      query: () => "/auth/me",
+      providesTags: ["Auth"],
+    }),
+  }),
+  overrideExisting: false,
+});
+
+export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApi;
 `;
 }
 function generateRolesConstants(config) {
   const allRoles = [...config.roles, ...config.customRoles];
-  const rolesObject = allRoles.map((role) => {
-    const key = role.toUpperCase().replace(/-/g, "_");
-    return `  ${key}: "${role}"`;
-  }).join(",\n");
+  const roleEntries = allRoles.map(
+    (role) => `  ${role.toUpperCase().replace(/[^A-Z0-9]/g, "_")}: "${role}",`
+  );
   return `export const ROLES = {
-${rolesObject},
+${roleEntries.join("\n")}
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
-
 export const ALL_ROLES: Role[] = Object.values(ROLES);
 `;
 }
@@ -770,48 +973,65 @@ export interface LoginCredentials {
   email: string;
   password: string;
 }
+`;
+}
+function generateCommonTypes() {
+  return `export interface ApiResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data: T;
+  statusCode?: number;
+}
 
-export interface RegisterCredentials {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export type SortOrder = "asc" | "desc";
+`;
+}
+function generateNavTypes() {
+  return `export interface NavItem {
+  title: string;
+  href: string;
+  icon?: string;
+  badge?: string | number;
+  disabled?: boolean;
+}
+
+export interface SidebarSection {
+  title?: string;
+  items: NavItem[];
 }
 `;
 }
 function generatePermissions() {
   return `import type { Role } from "@/constants/roles";
 
-/**
- * Check if user has a specific role
- */
 export function hasRole(userRoles: Role[], requiredRole: Role): boolean {
+  if (!userRoles || !Array.isArray(userRoles)) return false;
   return userRoles.includes(requiredRole);
 }
 
-/**
- * Check if user has ANY of the required roles
- */
 export function hasAnyRole(userRoles: Role[], requiredRoles: Role[]): boolean {
+  if (!userRoles || !Array.isArray(userRoles)) return false;
   return requiredRoles.some((role) => userRoles.includes(role));
 }
 
-/**
- * Check if user has ALL of the required roles
- */
 export function hasAllRoles(userRoles: Role[], requiredRoles: Role[]): boolean {
+  if (!userRoles || !Array.isArray(userRoles)) return false;
   return requiredRoles.every((role) => userRoles.includes(role));
 }
 
-/**
- * Get the highest priority role from user's roles
- * Priority is based on the order in the roles array (first = highest)
- */
 export function getHighestRole(
   userRoles: Role[],
-  rolePriority: Role[]
+  hierarchy: Role[]
 ): Role | null {
-  for (const role of rolePriority) {
+  for (const role of hierarchy) {
     if (userRoles.includes(role)) {
       return role;
     }
@@ -819,199 +1039,51 @@ export function getHighestRole(
   return null;
 }
 
-/**
- * Get the default redirect path based on user's role
- */
 export function getRoleRedirectPath(role: Role): string {
   return \`/\${role}/dashboard\`;
-}
-`;
-}
-function generateMiddleware(config) {
-  const allRoles = [...config.roles, ...config.customRoles];
-  const roleMatchers = allRoles.map(
-    (role) => `  if (pathname.startsWith("/${role}")) {
-    // TODO: Verify user has "${role}" role from your auth system
-    // const userRoles = getUserRolesFromToken(request);
-    // if (!userRoles.includes("${role}")) {
-    //   return NextResponse.redirect(new URL("/unauthorized", request.url));
-    // }
-  }`
-  ).join("\n\n");
-  return `import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-// Protected routes that require authentication
-const protectedRoutes = [${allRoles.map((r) => `"/${r}"`).join(", ")}];
-
-// Public routes that don't require authentication
-const publicRoutes = ["/", "/login", "/register"];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Check if route is protected
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (isProtectedRoute) {
-    // TODO: Implement your authentication check here
-    // Example with JWT cookie:
-    // const token = request.cookies.get("token")?.value;
-    // if (!token) {
-    //   return NextResponse.redirect(new URL("/login", request.url));
-    // }
-
-    // Role-based route protection
-${roleMatchers}
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico (favicon)
-     * - public files
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\\\..*$).*)",
-  ],
-};
-`;
-}
-function generateRoleAppConfig(config) {
-  const allRoles = [...config.roles, ...config.customRoles];
-  return `const roleAppConfig = {
-  roles: ${JSON.stringify(allRoles, null, 4)},
-
-  defaultRole: "${allRoles[0] || "admin"}",
-
-  auth: {
-    enabled: true,
-    loginPath: "/login",
-    registerPath: "/register",
-    unauthorizedPath: "/unauthorized",
-  },
-
-  redux: {
-    enabled: ${config.redux},
-    rtkQuery: ${config.rtkQuery},
-  },
-
-  tailwind: ${config.tailwind},
-};
-
-export default roleAppConfig;
-`;
-}
-function generateEnvExample() {
-  return `# API Base URL
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
-
-# Authentication
-JWT_SECRET=your-jwt-secret-key-here
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret-here
-
-# Database (optional)
-DATABASE_URL=your-database-url-here
-`;
-}
-function generateGlobalsCss(config) {
-  if (config.tailwind) {
-    return `@import "tailwindcss";
-`;
-  }
-  return `* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --accent: #3b82f6;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 `;
 }
 function generateRoleGuardComponent() {
   return `"use client";
 
-import { useAppSelector } from "@/lib/redux/hooks";
-import { hasAnyRole } from "@/lib/auth/permissions";
-import type { Role } from "@/constants/roles";
+import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import type { Role } from "@/constants/roles";
 
 interface RoleGuardProps {
-  children: React.ReactNode;
   allowedRoles: Role[];
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
   redirectTo?: string;
 }
 
-/**
- * RoleGuard component \u2014 wraps content that should only be visible
- * to users with specific roles.
- *
- * Usage:
- * <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.MANAGER]}>
- *   <AdminContent />
- * </RoleGuard>
- */
 export function RoleGuard({
-  children,
   allowedRoles,
+  children,
   fallback = null,
   redirectTo,
 }: RoleGuardProps) {
+  const { user, isAuthenticated, checkAnyRole } = useAuth();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAppSelector(
-    (state) => state.auth
-  );
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && redirectTo) {
-      router.push(redirectTo);
-    }
-  }, [isLoading, isAuthenticated, redirectTo, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-      </div>
-    );
-  }
-
+  // In real applications, allow initial load check
   if (!isAuthenticated || !user) {
+    if (redirectTo) {
+      router.push(redirectTo);
+      return null;
+    }
     return <>{fallback}</>;
   }
 
-  if (!hasAnyRole(user.roles, allowedRoles)) {
+  const hasAccess = checkAnyRole(allowedRoles);
+
+  if (!hasAccess) {
+    if (redirectTo) {
+      router.push(redirectTo);
+      return null;
+    }
     return <>{fallback}</>;
   }
 
@@ -1022,69 +1094,585 @@ export function RoleGuard({
 function generateUseAuthHook() {
   return `"use client";
 
-import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { setUser, clearUser, setLoading } from "@/features/auth/authSlice";
-import { hasRole, hasAnyRole, getRoleRedirectPath } from "@/lib/auth/permissions";
-import type { User } from "@/types/auth";
+import {
+  logout as logoutAction,
+  setCredentials,
+} from "@/features/auth/slice/authSlice";
+import {
+  hasRole,
+  hasAnyRole,
+  getRoleRedirectPath,
+} from "@/lib/auth/permissions";
 import type { Role } from "@/constants/roles";
+import type { User } from "@/types/auth";
 
-/**
- * Custom hook for authentication and role management.
- * Provides utilities for login, logout, and role checking.
- *
- * Usage:
- * const { user, isAdmin, login, logout, checkRole } = useAuth();
- */
 export function useAuth() {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading } = useAppSelector(
+  const { user, token, isAuthenticated } = useAppSelector(
     (state) => state.auth
   );
 
-  const login = useCallback(
-    (userData: User) => {
-      dispatch(setUser(userData));
-    },
-    [dispatch]
-  );
+  const checkRole = (role: Role): boolean => {
+    if (!user) return false;
+    return hasRole(user.roles, role);
+  };
 
-  const logout = useCallback(() => {
-    dispatch(clearUser());
-    // TODO: Add your logout logic (clear cookies, tokens, etc.)
-  }, [dispatch]);
+  const checkAnyRole = (roles: Role[]): boolean => {
+    if (!user) return false;
+    return hasAnyRole(user.roles, roles);
+  };
 
-  const checkRole = useCallback(
-    (role: Role): boolean => {
-      if (!user) return false;
-      return hasRole(user.roles, role);
-    },
-    [user]
-  );
+  const login = (userData: User, authToken: string) => {
+    dispatch(setCredentials({ user: userData, token: authToken }));
+  };
 
-  const checkAnyRole = useCallback(
-    (roles: Role[]): boolean => {
-      if (!user) return false;
-      return hasAnyRole(user.roles, roles);
-    },
-    [user]
-  );
+  const logout = () => {
+    dispatch(logoutAction());
+  };
 
-  const getRedirectPath = useCallback((): string => {
+  const getRedirectPath = (): string => {
     if (!user || user.roles.length === 0) return "/login";
     return getRoleRedirectPath(user.roles[0]);
-  }, [user]);
+  };
 
   return {
     user,
+    token,
     isAuthenticated,
-    isLoading,
-    login,
-    logout,
     checkRole,
     checkAnyRole,
+    login,
+    logout,
     getRedirectPath,
   };
+}
+`;
+}
+function generateNavConfig(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  const entries = [];
+  for (const role of allRoles) {
+    const roleRoutes = PREDEFINED_ROLES[role]?.routes || DEFAULT_CUSTOM_ROLE_ROUTES;
+    const items = roleRoutes.map((r) => {
+      const title = capitalize(r);
+      const icon = r === "dashboard" ? "LayoutDashboard" : r === "users" ? "Users" : r === "settings" ? "Settings" : "Layers";
+      return `      { title: "${title}", href: "/${role}/${r}", icon: "${icon}" }`;
+    });
+    entries.push(`  ${role}: [
+${items.join(",\n")}
+  ]`);
+  }
+  return `import type { NavItem } from "@/types/nav.types";
+
+export const SIDEBAR_NAV: Record<string, NavItem[]> = {
+${entries.join(",\n")}
+};
+`;
+}
+function generateSiteConfig(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  return `export const siteConfig = {
+  name: "${config.projectName}",
+  description: "Enterprise Role-Based Next.js Application",
+  roles: ${JSON.stringify(allRoles)},
+  defaultRole: "${allRoles[0] || "admin"}",
+};
+`;
+}
+function generateRoleAppConfig(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  return `const roleAppConfig = {
+  roles: ${JSON.stringify(allRoles)},
+  defaultRole: "${allRoles[0] || "admin"}",
+  auth: {
+    enabled: true,
+    loginPath: "/login",
+    registerPath: "/register",
+    unauthorizedPath: "/unauthorized",
+  },
+  redux: {
+    enabled: ${config.redux},
+    rtkQuery: ${config.rtkQuery},
+  },
+  tailwind: ${config.tailwind},
+};
+
+export default roleAppConfig;
+`;
+}
+function generateEnvExample() {
+  return `NEXT_PUBLIC_APP_NAME="Next Role App"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_API_URL="http://localhost:4000/api"
+NEXT_PUBLIC_SOCKET_URL="http://localhost:4000"
+JWT_SECRET="your-super-secret-jwt-key"
+`;
+}
+function generateUtils() {
+  return `export function cn(...inputs: (string | undefined | null | false)[]): string {
+  return inputs.filter(Boolean).join(" ");
+}
+`;
+}
+function generateUiButton() {
+  return `import React from "react";
+import { cn } from "@/lib/utils";
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
+  size?: "sm" | "md" | "lg";
+  isLoading?: boolean;
+}
+
+export function Button({
+  className,
+  variant = "primary",
+  size = "md",
+  isLoading,
+  children,
+  disabled,
+  ...props
+}: ButtonProps) {
+  const baseStyles = "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+
+  const variants = {
+    primary: "bg-blue-600 hover:bg-blue-700 text-white shadow-sm focus:ring-blue-500",
+    secondary: "bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700 focus:ring-gray-600",
+    outline: "border border-gray-700 hover:bg-gray-800 text-gray-300 focus:ring-gray-500",
+    danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500",
+    ghost: "hover:bg-gray-800/60 text-gray-400 hover:text-white focus:ring-gray-600",
+  };
+
+  const sizes = {
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-2.5 text-base",
+  };
+
+  return (
+    <button
+      className={cn(baseStyles, variants[variant], sizes[size], className)}
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading ? "Loading..." : children}
+    </button>
+  );
+}
+`;
+}
+function generateUiCard() {
+  return `import React from "react";
+import { cn } from "@/lib/utils";
+
+export function Card({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("rounded-2xl border border-gray-800/80 bg-gray-900/50 p-6 backdrop-blur-xl shadow-lg", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("flex flex-col space-y-1 pb-4", className)} {...props}>{children}</div>;
+}
+
+export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+  return <h3 className={cn("text-base font-semibold text-white tracking-tight", className)} {...props}>{children}</h3>;
+}
+
+export function CardContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("text-gray-300 text-sm", className)} {...props}>{children}</div>;
+}
+`;
+}
+function generateUiInput() {
+  return `import React from "react";
+import { cn } from "@/lib/utils";
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+}
+
+export function Input({ className, label, error, id, ...props }: InputProps) {
+  const inputId = id || props.name;
+
+  return (
+    <div className="w-full space-y-1.5">
+      {label && (
+        <label htmlFor={inputId} className="block text-xs font-medium text-gray-400">
+          {label}
+        </label>
+      )}
+      <input
+        id={inputId}
+        className={cn(
+          "w-full rounded-xl border border-gray-700/80 bg-gray-900/80 px-3.5 py-2 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors",
+          error && "border-red-500 focus:border-red-500",
+          className
+        )}
+        {...props}
+      />
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}
+`;
+}
+function generateUiDataTable() {
+  return `import React from "react";
+import { cn } from "@/lib/utils";
+
+export interface Column<T> {
+  header: string;
+  accessorKey?: keyof T;
+  cell?: (item: T) => React.ReactNode;
+  className?: string;
+}
+
+export interface DataTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  emptyMessage?: string;
+  className?: string;
+}
+
+export function DataTable<T extends { id?: string | number }>({
+  columns,
+  data,
+  emptyMessage = "No records found",
+  className,
+}: DataTableProps<T>) {
+  return (
+    <div className={cn("w-full overflow-x-auto rounded-xl border border-gray-800 bg-gray-950/40", className)}>
+      <table className="w-full text-left text-sm text-gray-300">
+        <thead className="border-b border-gray-800 bg-gray-900/40 text-xs uppercase text-gray-400">
+          <tr>
+            {columns.map((col, index) => (
+              <th key={index} className={cn("px-4 py-3 font-semibold", col.className)}>
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800/80">
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                {emptyMessage}
+              </td>
+            </tr>
+          ) : (
+            data.map((row, rowIndex) => (
+              <tr key={row.id || rowIndex} className="hover:bg-gray-800/30 transition-colors">
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex} className={cn("px-4 py-3", col.className)}>
+                    {col.cell ? col.cell(row) : col.accessorKey ? String(row[col.accessorKey] ?? "") : null}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+`;
+}
+function generateLoadingSpinner() {
+  return `export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
+  const sizes = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" };
+  return (
+    <div className="flex items-center justify-center p-4">
+      <div className={\`animate-spin rounded-full border-2 border-gray-700 border-t-blue-500 \${sizes[size]}\`} />
+    </div>
+  );
+}
+`;
+}
+function generateEmptyState() {
+  return `export function EmptyState({ title = "No data found", description = "No entries to display." }: { title?: string; description?: string }) {
+  return (
+    <div className="p-8 text-center border border-dashed border-gray-800 rounded-2xl bg-gray-900/20">
+      <p className="text-sm font-semibold text-gray-300">{title}</p>
+      <p className="text-xs text-gray-500 mt-1">{description}</p>
+    </div>
+  );
+}
+`;
+}
+function generateHeaderComponent(config) {
+  return `"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+${config.redux ? `import { useAuth } from "@/hooks/useAuth";` : ""}
+
+export function Header({ role }: { role: string }) {
+  const router = useRouter();
+${config.redux ? `  const { user, logout } = useAuth();` : ""}
+
+  const handleLogout = () => {
+${config.redux ? `    logout();` : ""}
+    router.push("/login");
+  };
+
+  return (
+    <header className="h-16 border-b border-gray-800/80 bg-gray-950/80 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 capitalize">
+          {role} Workspace
+        </span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Link href="/" className="text-xs text-gray-400 hover:text-white transition-colors">
+          Home
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium border border-red-500/20 transition-all cursor-pointer"
+        >
+          Sign Out
+        </button>
+      </div>
+    </header>
+  );
+}
+`;
+}
+function generateSidebarComponent(config) {
+  return `"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { SIDEBAR_NAV } from "@/config/navigation";
+
+export function Sidebar({ role }: { role: string }) {
+  const pathname = usePathname();
+  const navItems = SIDEBAR_NAV[role] || [{ title: "Dashboard", href: \`/\${role}/dashboard\` }];
+
+  return (
+    <aside className="w-64 border-r border-gray-800/80 bg-gray-950 flex flex-col shrink-0">
+      <div className="h-16 px-6 border-b border-gray-800/80 flex items-center">
+        <Link href="/" className="font-bold text-sm tracking-tight text-white flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+          ${config.projectName}
+        </Link>
+      </div>
+
+      <nav className="p-4 space-y-1.5 flex-1 overflow-y-auto">
+        <p className="px-3 pb-2 text-[10px] uppercase font-semibold text-gray-500 tracking-wider">
+          {role} Navigation
+        </p>
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={\`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all \${
+                isActive
+                  ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+                  : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+              }\`}
+            >
+              <span>{item.title}</span>
+              {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-gray-800/80">
+        <div className="flex items-center gap-2.5 px-2">
+          <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs uppercase">
+            {role[0]}
+          </div>
+          <div className="overflow-hidden">
+            <p className="text-xs font-semibold text-white truncate capitalize">{role} User</p>
+            <p className="text-[10px] text-gray-500 truncate">Authenticated session</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+`;
+}
+function generateSocketClient() {
+  return `/**
+ * Real-time WebSocket / Socket.io Client
+ * Modular connection service for live notifications, logistics tracking, or match bidding.
+ */
+
+type ListenerCallback = (data: any) => void;
+
+class SocketService {
+  private listeners: Map<string, Set<ListenerCallback>> = new Map();
+  private isConnected: boolean = false;
+
+  connect(url: string = process.env.NEXT_PUBLIC_SOCKET_URL || "") {
+    if (this.isConnected) return;
+    this.isConnected = true;
+    console.log("[SocketService] Connected to", url || "default socket endpoint");
+  }
+
+  disconnect() {
+    this.isConnected = false;
+    this.listeners.clear();
+    console.log("[SocketService] Disconnected");
+  }
+
+  on(event: string, callback: ListenerCallback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event)!.add(callback);
+    return () => this.off(event, callback);
+  }
+
+  off(event: string, callback: ListenerCallback) {
+    this.listeners.get(event)?.delete(callback);
+  }
+
+  emit(event: string, payload: any) {
+    console.log("[SocketService Emit]", event, payload);
+  }
+}
+
+export const socketService = new SocketService();
+`;
+}
+function generateSocketEvents() {
+  return `export const SOCKET_EVENTS = {
+  CONNECT: "connect",
+  DISCONNECT: "disconnect",
+  NOTIFICATION: "notification",
+  STATUS_UPDATE: "status_update",
+  MATCH_UPDATE: "match_update",
+  TRACKING_UPDATE: "tracking_update",
+} as const;
+
+export type SocketEvent = (typeof SOCKET_EVENTS)[keyof typeof SOCKET_EVENTS];
+`;
+}
+function generateUseSocketHook() {
+  return `"use client";
+
+import { useEffect, useState } from "react";
+import { socketService } from "@/lib/socket/socketClient";
+
+export function useSocket<T = any>(event: string, onMessage?: (data: T) => void) {
+  const [data, setData] = useState<T | null>(null);
+
+  useEffect(() => {
+    socketService.connect();
+
+    const unsubscribe = socketService.on(event, (incoming) => {
+      setData(incoming);
+      onMessage?.(incoming);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [event, onMessage]);
+
+  return {
+    data,
+    emit: (payload: any) => socketService.emit(event, payload),
+  };
+}
+`;
+}
+function generateUseDebounceHook() {
+  return `"use client";
+
+import { useState, useEffect } from "react";
+
+export function useDebounce<T>(value: T, delay: number = 300): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+`;
+}
+function generateMiddleware(config) {
+  const allRoles = [...config.roles, ...config.customRoles];
+  const roleRoutesList = allRoles.map((r) => `"/${r}"`).join(", ");
+  return `import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const protectedRoleRoutes = [${roleRoutesList}];
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  const isProtectedRoute = protectedRoleRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (isProtectedRoute) {
+    // In production: Inspect cookie or Authorization token
+    // Example:
+    // const token = request.cookies.get("token")?.value;
+    // if (!token) {
+    //   return NextResponse.redirect(new URL("/login", request.url));
+    // }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};
+`;
+}
+function generateGlobalsCss(config) {
+  if (config.tailwind) {
+    return `@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+  }
+
+  body {
+    background-color: #030712;
+    color: #f3f4f6;
+  }
+}
+`;
+  }
+  return `/* Base styling */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #030712;
+  color: #f3f4f6;
 }
 `;
 }
@@ -1099,11 +1687,14 @@ var ProjectGenerator = class {
   async generate() {
     console.log("");
     console.log(
-      import_chalk.default.bold.cyan("\u{1F680} Creating Next Role App: ") + import_chalk.default.white(this.config.projectName)
+      import_chalk.default.bold.cyan("\u{1F680} Creating Next Role-Based App: ") + import_chalk.default.white(this.config.projectName)
     );
     console.log("");
     await this.createNextApp();
     await this.createFolderStructure();
+    await this.generateSharedComponentsAndUi();
+    await this.generateConfigAndNavSetup();
+    await this.generateRealtimeSetup();
     await this.generateRoleStructure();
     if (this.config.redux) {
       await this.generateReduxSetup();
@@ -1153,16 +1744,27 @@ var ProjectGenerator = class {
   }
   // ─── Step 2: Create Base Folder Structure ───
   async createFolderStructure() {
-    const spinner = (0, import_ora.default)("Creating folder structure...").start();
+    const spinner = (0, import_ora.default)("Creating scalable feature-based folder structure...").start();
     const dirs = [
-      "components",
-      "features/auth",
+      "config",
+      "components/ui",
+      "components/shared",
+      "components/feedback",
+      "features/auth/components",
+      "features/auth/api",
+      "features/auth/slice",
+      "features/auth/types",
       "features/user",
       "lib/auth",
+      "lib/socket",
       "constants",
       "types",
+      "hooks",
+      "app/(marketing)",
       "app/(auth)/login",
       "app/(auth)/register",
+      "app/(auth)/forgot-password",
+      "app/(auth)/verify-otp",
       "app/(dashboard)",
       "app/unauthorized"
     ];
@@ -1172,15 +1774,103 @@ var ProjectGenerator = class {
         dirs.push("lib/redux/api");
       }
     }
-    dirs.push("hooks");
     for (const dir of dirs) {
       await import_fs_extra.default.ensureDir(import_path.default.join(this.projectPath, dir));
     }
-    spinner.succeed("Folder structure created");
+    spinner.succeed("Scalable folder skeleton created");
   }
-  // ─── Step 3: Generate Role Structure ───
+  // ─── Step 3: Shared UI & Components ───
+  async generateSharedComponentsAndUi() {
+    const spinner = (0, import_ora.default)("Creating atomic UI primitives & shared layouts...").start();
+    const ext = this.config.typescript ? "ts" : "js";
+    const extx = this.config.typescript ? "tsx" : "jsx";
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "lib", `utils.${ext}`),
+      generateUtils()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "ui", `Button.${extx}`),
+      generateUiButton()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "ui", `Card.${extx}`),
+      generateUiCard()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "ui", `Input.${extx}`),
+      generateUiInput()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "ui", `DataTable.${extx}`),
+      generateUiDataTable()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "feedback", `LoadingSpinner.${extx}`),
+      generateLoadingSpinner()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "feedback", `EmptyState.${extx}`),
+      generateEmptyState()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "shared", `Header.${extx}`),
+      generateHeaderComponent(this.config)
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "components", "shared", `Sidebar.${extx}`),
+      generateSidebarComponent(this.config)
+    );
+    spinner.succeed("Atomic UI primitives & shared layouts created");
+  }
+  // ─── Step 4: Config & Navigation ───
+  async generateConfigAndNavSetup() {
+    const spinner = (0, import_ora.default)("Generating central configuration & role navigation...").start();
+    const ext = this.config.typescript ? "ts" : "js";
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "config", `site.${ext}`),
+      generateSiteConfig(this.config)
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "config", `navigation.${ext}`),
+      generateNavConfig(this.config)
+    );
+    if (this.config.typescript) {
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(this.projectPath, "types", `common.types.${ext}`),
+        generateCommonTypes()
+      );
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(this.projectPath, "types", `nav.types.${ext}`),
+        generateNavTypes()
+      );
+    }
+    spinner.succeed("Central configuration & navigation configured");
+  }
+  // ─── Step 5: Real-time Socket Setup ───
+  async generateRealtimeSetup() {
+    const spinner = (0, import_ora.default)("Wiring real-time socket layer & ergonomic hooks...").start();
+    const ext = this.config.typescript ? "ts" : "js";
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "lib", "socket", `socketClient.${ext}`),
+      generateSocketClient()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "lib", "socket", `socketEvents.${ext}`),
+      generateSocketEvents()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "hooks", `useSocket.${ext}`),
+      generateUseSocketHook()
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "hooks", `useDebounce.${ext}`),
+      generateUseDebounceHook()
+    );
+    spinner.succeed("Real-time socket layer & hooks ready");
+  }
+  // ─── Step 6: Generate Role Structure ───
   async generateRoleStructure() {
-    const spinner = (0, import_ora.default)("Generating role-based routes...").start();
+    const spinner = (0, import_ora.default)("Generating role-based nested layouts & sub-routes...").start();
     const allRoles = [...this.config.roles, ...this.config.customRoles];
     const ext = this.config.typescript ? "tsx" : "jsx";
     for (const role of allRoles) {
@@ -1192,6 +1882,10 @@ var ProjectGenerator = class {
         role
       );
       await import_fs_extra.default.ensureDir(roleDashboardPath);
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(roleDashboardPath, `layout.${ext}`),
+        generateRoleLayout(role, this.config)
+      );
       const dashboardDir = import_path.default.join(roleDashboardPath, "dashboard");
       await import_fs_extra.default.ensureDir(dashboardDir);
       await import_fs_extra.default.writeFile(
@@ -1225,6 +1919,14 @@ var ProjectGenerator = class {
       generateRegisterPage(this.config)
     );
     await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "app", "(auth)", "forgot-password", `page.${ext}`),
+      generateForgotPasswordPage(this.config)
+    );
+    await import_fs_extra.default.writeFile(
+      import_path.default.join(this.projectPath, "app", "(auth)", "verify-otp", `page.${ext}`),
+      generateVerifyOtpPage(this.config)
+    );
+    await import_fs_extra.default.writeFile(
       import_path.default.join(this.projectPath, "app", "unauthorized", `page.${ext}`),
       generateUnauthorizedPage()
     );
@@ -1244,9 +1946,9 @@ var ProjectGenerator = class {
       `Role structure generated (${allRoles.length} roles: ${allRoles.join(", ")})`
     );
   }
-  // ─── Step 4: Generate Redux Setup ───
+  // ─── Step 7: Generate Redux Setup ───
   async generateReduxSetup() {
-    const spinner = (0, import_ora.default)("Setting up Redux Toolkit...").start();
+    const spinner = (0, import_ora.default)("Setting up Redux Toolkit & Feature API slicing...").start();
     const ext = this.config.typescript ? "ts" : "js";
     const extx = this.config.typescript ? "tsx" : "jsx";
     await import_fs_extra.default.writeFile(
@@ -1266,18 +1968,22 @@ var ProjectGenerator = class {
         import_path.default.join(this.projectPath, "lib", "redux", "api", `baseApi.${ext}`),
         generateBaseApi()
       );
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(this.projectPath, "features", "auth", "api", `authApi.${ext}`),
+        generateAuthApi(this.config)
+      );
     }
     await import_fs_extra.default.writeFile(
-      import_path.default.join(this.projectPath, "features", "auth", `authSlice.${ext}`),
+      import_path.default.join(this.projectPath, "features", "auth", "slice", `authSlice.${ext}`),
       generateAuthSlice(this.config)
     );
     spinner.succeed(
-      `Redux Toolkit${this.config.rtkQuery ? " + RTK Query" : ""} configured`
+      `Redux Toolkit${this.config.rtkQuery ? " + RTK Query feature injection" : ""} configured`
     );
   }
-  // ─── Step 5: Generate Auth Setup ───
+  // ─── Step 8: Generate Auth Setup ───
   async generateAuthSetup() {
-    const spinner = (0, import_ora.default)("Creating RBAC utilities...").start();
+    const spinner = (0, import_ora.default)("Creating RBAC utilities & RoleGuard...").start();
     const ext = this.config.typescript ? "ts" : "js";
     const extx = this.config.typescript ? "tsx" : "jsx";
     await import_fs_extra.default.writeFile(
@@ -1285,9 +1991,15 @@ var ProjectGenerator = class {
       generateRolesConstants(this.config)
     );
     if (this.config.typescript) {
+      const authTypesContent = generateAuthTypes(this.config);
       await import_fs_extra.default.writeFile(
         import_path.default.join(this.projectPath, "types", `auth.${ext}`),
-        generateAuthTypes(this.config)
+        authTypesContent
+      );
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(this.projectPath, "features", "auth", "types", `auth.types.${ext}`),
+        `export * from "@/types/auth";
+`
       );
     }
     await import_fs_extra.default.writeFile(
@@ -1295,30 +2007,36 @@ var ProjectGenerator = class {
       generatePermissions()
     );
     if (this.config.redux) {
+      const roleGuardCode = generateRoleGuardComponent();
+      await import_fs_extra.default.writeFile(
+        import_path.default.join(this.projectPath, "components", "shared", `RoleGuard.${extx}`),
+        roleGuardCode
+      );
       await import_fs_extra.default.writeFile(
         import_path.default.join(this.projectPath, "components", `RoleGuard.${extx}`),
-        generateRoleGuardComponent()
+        `export * from "./shared/RoleGuard";
+`
       );
       await import_fs_extra.default.writeFile(
         import_path.default.join(this.projectPath, "hooks", `useAuth.${ext}`),
         generateUseAuthHook()
       );
     }
-    spinner.succeed("RBAC utilities created");
+    spinner.succeed("RBAC utilities & security guards created");
   }
-  // ─── Step 6: Generate Middleware ───
+  // ─── Step 9: Generate Middleware ───
   async generateMiddlewareFile() {
-    const spinner = (0, import_ora.default)("Creating middleware...").start();
+    const spinner = (0, import_ora.default)("Creating edge middleware...").start();
     const ext = this.config.typescript ? "ts" : "js";
     await import_fs_extra.default.writeFile(
       import_path.default.join(this.projectPath, `middleware.${ext}`),
       generateMiddleware(this.config)
     );
-    spinner.succeed("Middleware created");
+    spinner.succeed("Edge middleware created");
   }
-  // ─── Step 7: Generate Config Files ───
+  // ─── Step 10: Generate Config Files ───
   async generateConfigFiles() {
-    const spinner = (0, import_ora.default)("Creating configuration files...").start();
+    const spinner = (0, import_ora.default)("Creating project configuration files...").start();
     const ext = this.config.typescript ? "ts" : "js";
     await import_fs_extra.default.writeFile(
       import_path.default.join(this.projectPath, `role-app.config.${ext}`),
@@ -1334,7 +2052,7 @@ var ProjectGenerator = class {
     );
     spinner.succeed("Configuration files created");
   }
-  // ─── Step 8: Install Additional Dependencies ───
+  // ─── Step 11: Install Additional Dependencies ───
   async installAdditionalDeps() {
     const spinner = (0, import_ora.default)("Installing additional dependencies...").start();
     try {
@@ -1364,19 +2082,23 @@ var ProjectGenerator = class {
   printSuccessMessage() {
     const allRoles = [...this.config.roles, ...this.config.customRoles];
     console.log("");
-    console.log(import_chalk.default.green.bold("\u{1F389} Project created successfully!"));
+    console.log(import_chalk.default.green.bold("\u{1F389} Enterprise Next.js Role-Based App created successfully!"));
     console.log("");
-    console.log(import_chalk.default.white("  Project: ") + import_chalk.default.cyan(this.config.projectName));
+    console.log(import_chalk.default.white("  Project:      ") + import_chalk.default.cyan(this.config.projectName));
     console.log(
-      import_chalk.default.white("  Roles:   ") + import_chalk.default.yellow(allRoles.join(", "))
+      import_chalk.default.white("  Roles:        ") + import_chalk.default.yellow(allRoles.join(", "))
     );
     console.log(
-      import_chalk.default.white("  Stack:   ") + [
-        "Next.js",
+      import_chalk.default.white("  Architecture: ") + import_chalk.default.magenta("Feature-Driven Modular Hybrid Structure")
+    );
+    console.log(
+      import_chalk.default.white("  Stack:        ") + [
+        "Next.js 16",
         this.config.typescript ? "TypeScript" : "JavaScript",
         this.config.tailwind ? "Tailwind CSS" : null,
         this.config.redux ? "Redux Toolkit" : null,
-        this.config.rtkQuery ? "RTK Query" : null
+        this.config.rtkQuery ? "RTK Query" : null,
+        "Socket.io Ready"
       ].filter(Boolean).join(", ")
     );
     console.log("");
@@ -1385,7 +2107,7 @@ var ProjectGenerator = class {
     console.log(import_chalk.default.cyan(`    cd ${this.config.projectName}`));
     console.log(import_chalk.default.cyan("    npm run dev"));
     console.log("");
-    console.log(import_chalk.default.white("  Dashboard routes:"));
+    console.log(import_chalk.default.white("  Role Dashboards (Isolated Nested Layouts):"));
     console.log("");
     for (const role of allRoles) {
       console.log(import_chalk.default.gray(`    /${role}/dashboard`));
@@ -1393,7 +2115,7 @@ var ProjectGenerator = class {
     console.log("");
     console.log(
       import_chalk.default.gray(
-        "  Edit role-app.config.ts to customize your role configuration."
+        "  Customize navigation in config/navigation.ts and roles in constants/roles.ts"
       )
     );
     console.log("");

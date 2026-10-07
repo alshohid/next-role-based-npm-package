@@ -14,16 +14,19 @@
    - [Phase 1: CLI Entry & Flag Parsing](#phase-1-cli-entry--flag-parsing)
    - [Phase 2: Interactive Prompt Collection](#phase-2-interactive-prompt-collection)
    - [Phase 3: Configuration Normalization](#phase-3-configuration-normalization)
-   - [Phase 4: The 8-Step Generation Engine](#phase-4-the-8-step-generation-engine)
-4. [Deep Dive: The 8 Generation Steps](#4-deep-dive-the-8-generation-steps)
+   - [Phase 4: The 11-Step Generation Engine](#phase-4-the-11-step-generation-engine)
+4. [Deep Dive: The 11 Generation Steps](#4-deep-dive-the-11-generation-steps)
    - [Step 1: Next.js Foundation Scaffolding](#step-1-nextjs-foundation-scaffolding)
-   - [Step 2: Directory Skeleton Preparation](#step-2-directory-skeleton-preparation)
-   - [Step 3: Role-Based App Router Hierarchy](#step-3-role-based-app-router-hierarchy)
-   - [Step 4: Redux Toolkit & RTK Query Wiring](#step-4-redux-toolkit--rtk-query-wiring)
-   - [Step 5: RBAC Engine, Types & Guard Components](#step-5-rbac-engine-types--guard-components)
-   - [Step 6: Edge Middleware Route Protection](#step-6-edge-middleware-route-protection)
-   - [Step 7: Project Configuration & Environment Variables](#step-7-project-configuration--environment-variables)
-   - [Step 8: Dependency Resolution & Finalization](#step-8-dependency-resolution--finalization)
+   - [Step 2: Scalable Feature-Based Skeleton Preparation](#step-2-scalable-feature-based-skeleton-preparation)
+   - [Step 3: Atomic UI Primitives & Shared Layouts](#step-3-atomic-ui-primitives--shared-layouts)
+   - [Step 4: Central Configuration & Role Navigation](#step-4-central-configuration--role-navigation)
+   - [Step 5: Real-time Socket Layer & Ergonomic Hooks](#step-5-real-time-socket-layer--ergonomic-hooks)
+   - [Step 6: Role-Based Nested Layouts & Sub-routes](#step-6-role-based-nested-layouts--sub-routes)
+   - [Step 7: Redux Toolkit & Feature API Injection](#step-7-redux-toolkit--feature-api-injection)
+   - [Step 8: RBAC Engine, Types & Guard Components](#step-8-rbac-engine-types--guard-components)
+   - [Step 9: Edge Middleware Route Protection](#step-9-edge-middleware-route-protection)
+   - [Step 10: Configuration & Environment Files](#step-10-configuration--environment-files)
+   - [Step 11: Dependency Resolution & Finalization](#step-11-dependency-resolution--finalization)
 5. [Generated Application Runtime Architecture](#5-generated-application-runtime-architecture)
    - [Authentication & Role Resolution Flow](#authentication--role-resolution-flow)
    - [Client-Side Protection with RoleGuard & useAuth](#client-side-protection-with-roleguard--useauth)
@@ -129,12 +132,12 @@ interface ProjectConfig {
 }
 ```
 
-### Phase 4: The 8-Step Generation Engine
+### Phase 4: The 11-Step Generation Engine
 An instance of `ProjectGenerator` is instantiated and `generator.generate()` executes sequential asynchronous steps with visual spinners powered by `ora` and colored terminal feedback powered by `chalk`.
 
 ---
 
-## 4. Deep Dive: The 8 Generation Steps
+## 4. Deep Dive: The 11 Generation Steps
 
 ### Step 1: Next.js Foundation Scaffolding
 - **Target:** Root directory `${process.cwd()}/${projectName}`.
@@ -151,74 +154,90 @@ An instance of `ProjectGenerator` is instantiated and `generator.generate()` exe
     --tailwind (or --no-tailwind)
   ```
 
-### Step 2: Directory Skeleton Preparation
-Ensures a pristine structure adhering to Next.js App Router best practices using `fs-extra`:
-- `components/` (Shared UI components like `RoleGuard`)
-- `features/auth/` (Auth slice and state logic)
-- `features/user/` (Domain-specific feature logic)
-- `lib/auth/` (RBAC utilities)
-- `lib/redux/` & `lib/redux/api/` (Store, hooks, base API)
+### Step 2: Scalable Feature-Based Skeleton Preparation
+Ensures a feature-driven hybrid directory structure using `fs-extra`:
+- `config/` (Central site metadata & dynamic role-based navigation configs)
+- `components/ui/` (Atomic UI primitives: `Button`, `Card`, `Input`, `DataTable`)
+- `components/shared/` (Layout shells: `Header`, `Sidebar`, `RoleGuard`)
+- `components/feedback/` (`LoadingSpinner`, `EmptyState`)
+- `features/auth/` (Isolated auth domain: `components`, `api`, `slice`, `types`)
+- `features/user/` (Domain feature space ready for business logic)
+- `lib/auth/` (RBAC permissions engine)
+- `lib/socket/` (Real-time WebSocket & Socket.io client layer)
+- `lib/redux/` & `lib/redux/api/` (Store, typed hooks, provider, base API)
 - `constants/` (Role constants)
-- `types/` (TypeScript interfaces)
-- `hooks/` (Custom React hooks)
-- `app/(auth)/login/`, `app/(auth)/register/` (Auth route group)
-- `app/(dashboard)/` (Protected dashboard group)
+- `types/` (TypeScript contracts: common, auth, navigation)
+- `hooks/` (Custom React hooks: `useAuth`, `useSocket`, `useDebounce`)
+- `app/(auth)/` (`login`, `register`, `forgot-password`, `verify-otp`)
+- `app/(dashboard)/` (Role-isolated protected route groups)
 - `app/unauthorized/` (HTTP 403 Access Denied page)
 
-### Step 3: Role-Based App Router Hierarchy
+### Step 3: Atomic UI Primitives & Shared Layouts
+Generates reusable components:
+- **`lib/utils.ts`:** Utility helper function `cn(...)` combining classes cleanly.
+- **`components/ui/Button.tsx`:** Multi-variant (`primary`, `secondary`, `outline`, `danger`, `ghost`) accessible button.
+- **`components/ui/Card.tsx`:** Glassmorphic dark card (`Card`, `CardHeader`, `CardTitle`, `CardContent`).
+- **`components/ui/Input.tsx`:** Styled input with built-in label and error messaging.
+- **`components/ui/DataTable.tsx`:** Enterprise data table with column accessors, custom cells, and empty state support.
+- **`components/feedback/`:** `LoadingSpinner.tsx` and `EmptyState.tsx`.
+- **`components/shared/Header.tsx`:** Dynamic workspace header displaying active role and user actions.
+- **`components/shared/Sidebar.tsx`:** Dynamic role-aware sidebar driven by `config/navigation.ts`.
+
+### Step 4: Central Configuration & Role Navigation
+- **`config/site.ts`:** Central site configuration, default role, and metadata.
+- **`config/navigation.ts`:** Single-source-of-truth sidebar menu definitions mapped per role (`SIDEBAR_NAV`).
+- **`types/common.types.ts`:** Common API and pagination interfaces (`ApiResponse<T>`, `PaginatedResponse<T>`).
+- **`types/nav.types.ts`:** Navigation contracts (`NavItem`, `SidebarSection`).
+
+### Step 5: Real-time Socket Layer & Ergonomic Hooks
+- **`lib/socket/socketClient.ts`:** Singleton real-time client ready for Socket.io / WebSocket connections.
+- **`lib/socket/socketEvents.ts`:** Type-safe socket event dictionary (`NOTIFICATION`, `STATUS_UPDATE`, etc.).
+- **`hooks/useSocket.ts`:** Clean declarative React hook for real-time subscription.
+- **`hooks/useDebounce.ts`:** Performance optimization hook for search and filter inputs.
+
+### Step 6: Role-Based Nested Layouts & Sub-routes
 For every active role (predefined + custom):
-1. **Dynamic Dashboard Path:** `app/(dashboard)/<role>/dashboard/page.tsx`
-   - Generates an analytical dashboard with KPI metrics, header, and sidebar navigation.
-2. **Sub-Route Generation:**
-   - Predefined roles get tailored sub-routes (e.g. `admin` gets `users`, `settings`, `analytics`; `customer` gets `orders`, `profile`, `support`).
-   - Custom roles receive default sensible sub-routes (`tasks`, `reports`, `settings`).
-3. **App Router Layouts & Pages Overwrite:**
-   - `app/(dashboard)/layout.tsx`: Wraps dashboard sub-pages.
-   - `app/(auth)/layout.tsx`: Centered auth container.
-   - `app/(auth)/login/page.tsx`: Glassmorphism login UI.
-   - `app/(auth)/register/page.tsx`: Registration form.
-   - `app/unauthorized/page.tsx`: 403 Forbidden screen.
-   - `app/layout.tsx`: Wraps app with `ReduxProvider` and font setup.
-   - `app/page.tsx`: Landing page with direct links to all active role dashboards.
-   - `app/globals.css`: Dark-mode glassmorphic styling system.
+1. **Nested Role Layout (`app/(dashboard)/<role>/layout.tsx`):**
+   - Renders persistent `<Sidebar role="<role>" />` and `<Header role="<role>" />`.
+   - Protects the entire subtree using `<RoleGuard>`.
+   - **Crucial Performance Advantage:** Sub-page navigation between routes (e.g. `/admin/dashboard` to `/admin/users`) does NOT re-render the sidebar or header.
+2. **Dashboard Console (`app/(dashboard)/<role>/dashboard/page.tsx`):**
+   - KPI metrics cards, quick navigation links, and real-time activity table.
+3. **Sub-Route Pages (`app/(dashboard)/<role>/<route>/page.tsx`):**
+   - Dedicated management screens for each role-specific resource.
+4. **App Router Auth Group & Root Overwrite:**
+   - `app/(auth)/login/page.tsx`, `app/(auth)/register/page.tsx`
+   - `app/(auth)/forgot-password/page.tsx`, `app/(auth)/verify-otp/page.tsx`
+   - `app/unauthorized/page.tsx` (403 page)
+   - `app/layout.tsx` (wrapped with `ReduxProvider`)
+   - `app/page.tsx` (portal landing page)
+   - `app/globals.css` (Tailwind dark glassmorphism system)
 
-### Step 4: Redux Toolkit & RTK Query Wiring
-When Redux is enabled:
-- **`lib/redux/store.ts`:** Creates configured Redux store with `authReducer` and RTK Query middleware.
-- **`lib/redux/hooks.ts`:** Exports typed hooks `useAppDispatch` and `useAppSelector`.
-- **`lib/redux/provider.tsx`:** Client-component wrapper (`"use client"`) providing the store.
-- **`lib/redux/api/baseApi.ts`:** Central RTK Query API service configured with `fetchBaseQuery`, automatic authorization header injection, and cache tags (`User`, `Auth`).
-- **`features/auth/authSlice.ts`:** Manages authenticated `user`, `token`, `isAuthenticated`, and reducer actions (`setCredentials`, `logout`, `updateUser`).
+### Step 7: Redux Toolkit & Feature API Injection
+- **`lib/redux/store.ts`:** Central store configured with `authReducer` and RTK Query middleware.
+- **`lib/redux/hooks.ts`:** Typed hooks `useAppDispatch` and `useAppSelector`.
+- **`lib/redux/provider.tsx`:** Client-side Redux provider component.
+- **`lib/redux/api/baseApi.ts`:** Central RTK Query service with automatic authorization token injection.
+- **`features/auth/api/authApi.ts`:** Injected authentication endpoints (`login`, `register`, `getMe`).
+- **`features/auth/slice/authSlice.ts`:** Dedicated auth state slice.
 
-### Step 5: RBAC Engine, Types & Guard Components
-- **`constants/roles.ts`:** Contains immutable dictionary `ROLES` and union type `Role`.
-- **`types/auth.ts`:** Full TypeScript contracts (`User`, `AuthResponse`, `LoginCredentials`).
-- **`lib/auth/permissions.ts`:** Pure helper functions:
-  - `hasRole(userRoles, role)`
-  - `hasAnyRole(userRoles, allowedRoles)`
-  - `hasAllRoles(userRoles, requiredRoles)`
-  - `getHighestRole(userRoles, hierarchy)`
-  - `getRoleRedirectPath(role)`
-- **`components/RoleGuard.tsx`:** Declarative React component to hide/show UI based on permissions:
-  ```tsx
-  <RoleGuard allowedRoles={[ROLES.ADMIN]} fallback={<Forbidden />}>
-    <AdminContent />
-  </RoleGuard>
-  ```
-- **`hooks/useAuth.ts`:** Clean ergonomic hook exposing `user`, `isAuthenticated`, `checkRole()`, `checkAnyRole()`, `login()`, `logout()`.
+### Step 8: RBAC Engine, Types & Guard Components
+- **`constants/roles.ts`:** Immutable dictionary `ROLES` and union type `Role`.
+- **`types/auth.ts`:** User, credentials, and auth response contracts.
+- **`lib/auth/permissions.ts`:** Pure helper functions (`hasRole`, `hasAnyRole`, `hasAllRoles`, `getHighestRole`, `getRoleRedirectPath`).
+- **`components/shared/RoleGuard.tsx`:** Declarative access guard component.
+- **`hooks/useAuth.ts`:** Ergonomic hook exposing current user, role checks, login, and logout.
 
-### Step 6: Edge Middleware Route Protection
-- **`middleware.ts`:** Intercepts incoming requests at the Next.js Edge layer.
-- Compares `request.nextUrl.pathname` against registered role route prefixes (`/admin`, `/customer`, `/worker`, etc.).
-- Outlines clear hook points for reading auth tokens/cookies and redirecting unauthorized visitors to `/login` or `/unauthorized`.
+### Step 9: Edge Middleware Route Protection
+- **`middleware.ts`:** Next.js Edge Middleware intercepting route requests and enforcing role paths.
 
-### Step 7: Project Configuration & Environment Variables
-- **`role-app.config.ts`:** Project-wide metadata file maintaining configured roles, default fallback paths, and enabled feature switches.
-- **`.env.example` & `.env.local`:** Pre-filled environment variable templates (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_NAME`, `JWT_SECRET`).
+### Step 10: Configuration & Environment Files
+- **`role-app.config.ts`:** Centralized project settings.
+- **`.env.example` & `.env.local`:** Pre-configured environment variables (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SOCKET_URL`, `JWT_SECRET`).
 
-### Step 8: Dependency Resolution & Finalization
-- Dynamically executes `npm install @reduxjs/toolkit react-redux` inside the newly scaffolded project directory.
-- Prints a clean success summary with commands to run and direct URLs for all generated role dashboards.
+### Step 11: Dependency Resolution & Finalization
+- Dynamically executes `npm install @reduxjs/toolkit react-redux` in the new project.
+- Prints a clear summary with direct links to all isolated role dashboards.
 
 ---
 
