@@ -1,0 +1,59 @@
+{
+  "name": "create-next-role-app",
+  "version": "1.0.0",
+  "description": "CLI tool to scaffold Next.js projects with role-based folder structure, Redux Toolkit, RTK Query, and RBAC utilities",
+  "main": "dist/index.js",
+  "bin": {
+    "create-next-role-app": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --clean",
+    "dev": "tsup src/index.ts --format cjs --watch",
+    "prepublishOnly": "npm run build",
+    "test": "node bin/cli.js test-app",
+    "link:test": "npm link && create-next-role-app test-app"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "role-based",
+    "rbac",
+    "redux",
+    "rtk-query",
+    "scaffold",
+    "cli",
+    "generator",
+    "create-next-app",
+    "dashboard",
+    "admin",
+    "boilerplate"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.3",
+    "chalk": "^6.0.1",
+    "commander": "^15.0.0",
+    "fs-extra": "^11.4.1",
+    "ora": "^9.4.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^26.6.4",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2"
+  }
+}
